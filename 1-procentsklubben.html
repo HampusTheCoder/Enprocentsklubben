@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1-procentsklubben – Klassrumsutmaningen</title>
+<style>
+:root{--bg:#101522;--panel:#1b2435;--panel2:#222e43;--gold:#f4c95d;--white:#f7f7fb;--muted:#aeb8ca;--green:#67d6a1;--red:#ff8585}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at top,#26334b 0%,#101522 62%);color:var(--white);font-family:system-ui,-apple-system,Segoe UI,sans-serif;display:flex;align-items:center;justify-content:center;padding:24px}
+.game{width:min(760px,100%);background:linear-gradient(160deg,#202c40,#171f2e);border:1px solid #3a4961;border-radius:24px;padding:clamp(22px,5vw,42px);box-shadow:0 24px 80px #0008}
+.brand{text-align:center;color:var(--gold);font-weight:900;letter-spacing:.13em;text-transform:uppercase;font-size:.8rem}
+h1{text-align:center;font-size:clamp(2rem,6vw,3.3rem);line-height:1.05;margin:10px 0 8px}
+.subtitle{text-align:center;color:var(--muted);margin:0 0 28px}
+.topline{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:.9rem;margin-bottom:12px}
+.progress{height:8px;background:#0d1420;border-radius:20px;overflow:hidden;margin-bottom:28px}
+.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,#e9ae38,var(--gold));transition:width .3s}
+.question-card{background:#111a29;border:1px solid #34435a;border-radius:18px;padding:clamp(22px,4vw,34px);min-height:220px;display:flex;flex-direction:column;justify-content:center}
+.level{color:var(--gold);font-size:.8rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px}
+.question{font-size:clamp(1.3rem,3.5vw,1.85rem);font-weight:700;line-height:1.35;white-space:pre-line}
+.answer-area{margin-top:22px}
+label{display:block;color:var(--muted);font-size:.9rem;margin-bottom:8px}
+input{width:100%;background:#0d1420;border:1px solid #53627a;border-radius:12px;padding:16px;color:white;font:inherit;font-size:1.05rem;outline:none}
+input:focus{border-color:var(--gold);box-shadow:0 0 0 3px #f4c95d22}
+button{border:0;border-radius:12px;padding:14px 20px;font:inherit;font-weight:800;cursor:pointer;transition:transform .12s,opacity .12s}
+button:active{transform:scale(.98)}
+.primary{width:100%;margin-top:12px;background:var(--gold);color:#1b1b1b}
+.primary:hover{filter:brightness(1.06)}
+.feedback{margin-top:16px;padding:14px 16px;border-radius:12px;display:none;line-height:1.45}
+.feedback.error{display:block;background:#482b35;border:1px solid #9b4c5a;color:#ffd7dc}
+.feedback.success{display:block;background:#183d35;border:1px solid #3d9876;color:#d8ffed}
+.explanation{color:#b9c8d8;font-size:.95rem;margin-top:8px}
+.next{margin-top:14px;background:var(--green);color:#10251d;width:100%}
+.footer{text-align:center;color:#7f8ba0;font-size:.8rem;margin-top:22px}
+.hidden{display:none!important}
+.start,.end{text-align:center}
+.start p,.end p{color:var(--muted);line-height:1.6}
+.start .primary,.end .primary{max-width:300px}
+.rules{background:#111a29;border:1px solid #34435a;border-radius:14px;padding:16px;text-align:left;margin:22px 0;color:#c7d0df;line-height:1.6}
+.big-number{font-size:4rem;color:var(--gold);font-weight:900;line-height:1;margin:18px}
+@media(max-width:480px){body{padding:12px}.game{padding:20px;border-radius:18px}.topline{font-size:.8rem}}
+</style>
+</head>
+<body>
+<main class="game">
+  <div class="brand">Den stora tankenöt-utmaningen</div>
+  <h1>1-procentsklubben</h1>
+  <p class="subtitle">Klassrumsutmaningen</p>
+
+  <section id="start" class="start">
+    <div class="rules">
+      <strong>Så spelar du</strong><br>
+      • Du måste svara rätt för att låsa upp nästa fråga.<br>
+      • Skriv ditt svar i rutan. Spelet försöker förstå vad du menar – du behöver inte skriva exakt som facit.<br>
+      • Du har obegränsat med tid och får försöka hur många gånger du vill.<br>
+      • Läs frågan noga. Ibland är det enklare än du tror!
+    </div>
+    <button class="primary" onclick="startGame()">Börja spela</button>
+  </section>
+
+  <section id="play" class="hidden">
+    <div class="topline"><span id="questionCount">Fråga 1 av 10</span><span id="progressText">0 av 10 avklarade</span></div>
+    <div class="progress"><span id="progressBar"></span></div>
+    <div class="question-card">
+      <div class="level" id="level">Utmaning 1</div>
+      <div class="question" id="question"></div>
+    </div>
+    <div class="answer-area">
+      <label for="answer">Ditt svar</label>
+      <input id="answer" type="text" autocomplete="off" placeholder="Skriv ditt svar här..." onkeydown="if(event.key==='Enter') checkAnswer()">
+      <button class="primary" id="submitBtn" onclick="checkAnswer()">Lås mitt svar</button>
+      <div id="feedback" class="feedback" role="status" aria-live="polite"></div>
+      <button id="nextBtn" class="next hidden" onclick="nextQuestion()">Nästa fråga →</button>
+    </div>
+  </section>
+
+  <section id="end" class="end hidden">
+    <div class="brand">Fantastiskt jobbat!</div>
+    <div class="big-number">10/10</div>
+    <h2>Du klarade hela utmaningen!</h2>
+    <p>Du har tagit dig igenom alla tio frågor. Du är en riktig medlem i 1-procentsklubben!</p>
+    <button class="primary" onclick="restartGame()">Spela igen</button>
+  </section>
+  <div class="footer">Ingen stress. Tänk efter – och lita på din logik.</div>
+</main>
+<script>
+const questions = [
+ {q:"Vilken månad har 28 dagar?", level:"Uppvärmning", check:a=>has(a,["alla","alla månader","samtliga","varje månad"]), explain:"Alla månader har minst 28 dagar. Februari har oftast exakt 28, men de andra månaderna har också 28 dagar."},
+ {q:"Du springer ett lopp och springer om personen som ligger på andra plats. Vilken plats ligger du på nu?", level:"Tänk efter", check:a=>has(a,["andra","andra plats","2","två","plats två"]), explain:"Du tar över andraplatsen. Personen som låg först är fortfarande före dig."},
+ {q:"En bonde har 17 får. Alla utom 9 springer iväg. Hur många får har bonden kvar?", level:"Tänk efter", check:a=>has(a,["9","nio","9 får","nio får"]), explain:"Nio får springer inte iväg. Därför har bonden 9 får kvar."},
+ {q:"Två pappor och två söner går till en affär. De köper tre glassar och alla får varsin glass. Hur är det möjligt?", level:"Klurigt", check:a=>has(a,["tre personer","3 personer","farfar pappa son","farfar, pappa och son","farfar och pappa och son","en farfar en pappa en son","far och son och farfar"]) || (has(a,["farfar"])&&has(a,["son"])&&has(a,["pappa"])), explain:"De är bara tre personer: en farfar, hans son (som själv är pappa) och sonsonen."},
+ {q:"Vilket tal kommer härnäst?\n\n2 – 6 – 12 – 20 – 30 – ?", level:"Mönster", check:a=>has(a,["42","fyrtiotvå"]), explain:"Mönstret är 1×2, 2×3, 3×4, 4×5, 5×6. Nästa blir 6×7 = 42."},
+ {q:"En klocka slår sex slag på fem sekunder. Hur lång tid tar det för klockan att slå tolv slag?", level:"Klurigt", check:a=>has(a,["11 sekunder","11 sek","11s","11","elva sekunder","elva sek"]), explain:"Sex slag ger fem mellanrum. Tolv slag ger elva mellanrum. Därför tar det 11 sekunder."},
+ {q:"Jag tänker på ett tvåsiffrigt tal.\n• Tiotalssiffran är dubbelt så stor som entalssiffran.\n• Om du byter plats på siffrorna blir talet 27 mindre.\n\nVilket tal tänker jag på?", level:"Svårare", check:a=>has(a,["63","sextiotre"]), explain:"Talet är 63. Byter du plats blir det 36, och 63 − 36 = 27."},
+ {q:"Du har två tomma kannor. Den ena rymmer 5 liter och den andra 3 liter. Du har obegränsat med vatten.\n\nHur kan du mäta upp exakt 4 liter vatten?", level:"Problemlösning", check:a=>((has(a,["4 liter","fyra liter","4l"]) && has(a,["5","fem"]) && has(a,["3","tre"]) && (has(a,["häl","häll","töm","fyll","över"])) ) || has(a,["fyll 5","häll över 3","2 liter kvar","fyll 5-literskannan","3-literskannan"])), explain:"Fyll 5-literskannan och häll över i 3-literskannan. Då återstår 2 liter i femliterskannan. Töm treliterskannan och häll över de 2 litrarna. Fyll femliterskannan igen och häll över 1 liter tills treliterskannan är full. Då återstår exakt 4 liter i femliterskannan."},
+ {q:"En kod består av tre siffror.\n\n682 – En siffra är rätt och står på rätt plats.\n614 – En siffra är rätt men står på fel plats.\n206 – Två siffror är rätt men båda står på fel plats.\n738 – Ingen siffra är rätt.\n780 – En siffra är rätt men står på fel plats.\n\nVilken är koden?", level:"Nästan där", check:a=>has(a,["042","42","noll fyra två","nollfyra två","0 4 2"]), explain:"Koden är 042. 7, 3 och 8 finns inte med. Ledtrådarna visar sedan att 0 står först, 4 i mitten och 2 sist."},
+ {q:"En man tittar på ett fotografi. Han säger:\n\n”Jag har inga syskon, men personens pappa på bilden är min pappas son.”\n\nVem är personen på fotografiet?", level:"Sista utmaningen", check:a=>has(a,["hans son","sin son","mannens son","hans barn","hans pojke","sonen","hans egen son"]) || (has(a,["son"])&&!has(a,["farfar"])), explain:"Personen är mannens son. Eftersom mannen inte har några syskon är ”min pappas son” mannen själv. Alltså är mannen personens pappa."}
+];
+let current=0, unlocked=false;
+function norm(s){return s.toLocaleLowerCase("sv-SE").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[.,!?;:()”“"]/g," ").replace(/\s+/g," ").trim();}
+function has(a, variants){const n=norm(a);return variants.some(v=>norm(v)===n || n.includes(norm(v)));}
+function startGame(){current=0;document.getElementById("start").classList.add("hidden");document.getElementById("end").classList.add("hidden");document.getElementById("play").classList.remove("hidden");render();}
+function render(){
+ unlocked=false;
+ document.getElementById("questionCount").textContent=`Fråga ${current+1} av ${questions.length}`;
+ document.getElementById("progressText").textContent=`${current} av ${questions.length} avklarade`;
+ document.getElementById("progressBar").style.width=(current/questions.length*100)+"%";
+ document.getElementById("level").textContent=questions[current].level;
+ document.getElementById("question").textContent=questions[current].q;
+ const input=document.getElementById("answer");input.value="";input.disabled=false;
+ document.getElementById("submitBtn").disabled=false;document.getElementById("submitBtn").classList.remove("hidden");
+ document.getElementById("nextBtn").classList.add("hidden");
+ const f=document.getElementById("feedback");f.className="feedback";f.textContent="";
+ input.focus();
+}
+function checkAnswer(){
+ if(unlocked)return;
+ const input=document.getElementById("answer"), answer=input.value.trim(), f=document.getElementById("feedback");
+ if(!answer){f.className="feedback error";f.textContent="Skriv ett svar innan du låser det!";input.focus();return;}
+ if(questions[current].check(answer)){
+  unlocked=true;f.className="feedback success";f.innerHTML="<strong>Rätt svar! Du låste upp nästa fråga.</strong><div class='explanation'></div>";
+  f.querySelector(".explanation").textContent=questions[current].explain;
+  input.disabled=true;document.getElementById("submitBtn").classList.add("hidden");
+  const next=document.getElementById("nextBtn");next.textContent=current===questions.length-1?"Se resultatet →":"Nästa fråga →";next.classList.remove("hidden");
+ }else{
+  f.className="feedback error";f.textContent="Inte riktigt! Läs frågan en gång till och försök igen. Du har hur många försök du vill.";
+  input.focus();input.select();
+ }
+}
+function nextQuestion(){
+ if(!unlocked)return;
+ current++;
+ if(current>=questions.length){document.getElementById("play").classList.add("hidden");document.getElementById("end").classList.remove("hidden");document.getElementById("progressBar").style.width="100%";return;}
+ render();
+}
+function restartGame(){document.getElementById("end").classList.add("hidden");document.getElementById("play").classList.remove("hidden");current=0;render();}
+</script>
+</body>
+</html>
